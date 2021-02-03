@@ -1,5 +1,6 @@
 package com.nokiaspstraining.demo.rest.configuration;
 
+import com.aerospike.client.AerospikeClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.domain.EntityScanner;
@@ -14,9 +15,9 @@ import org.springframework.data.aerospike.core.AerospikeExceptionTranslator;
 import org.springframework.data.aerospike.core.DefaultAerospikeExceptionTranslator;
 import org.springframework.data.aerospike.mapping.AerospikeMappingContext;
 import org.springframework.data.aerospike.mapping.Document;
+import org.springframework.data.aerospike.query.QueryEngine;
 import org.springframework.data.aerospike.query.StatementBuilder;
-import org.springframework.data.aerospike.query.cache.IndexesCache;
-import org.springframework.data.aerospike.query.cache.IndexesCacheHolder;
+import org.springframework.data.aerospike.query.cache.*;
 import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 
@@ -50,7 +51,7 @@ class AerospikeCommonDataConfiguration {
     @ConditionalOnMissingBean(name = "aerospikeTypeAliasAccessor")
     public AerospikeTypeAliasAccessor aerospikeTypeAliasAccessor() {
        // String typeKey = aerospikeDataProperties.getTypeKey();
-        return new AerospikeTypeAliasAccessor();
+        return new AerospikeTypeAliasAccessor(null);
     }
 
     @Bean(name = "aerospikeCustomConversions")
@@ -68,6 +69,7 @@ class AerospikeCommonDataConfiguration {
         context.setInitialEntitySet(new EntityScanner(applicationContext).scan(Document.class, Persistent.class));
         context.setSimpleTypeHolder(aerospikeCustomConversions.getSimpleTypeHolder());
         context.setDefaultNameSpace("test");
+        context.setCreateIndexesOnStartup(false);
         return context;
     }
 
@@ -75,5 +77,24 @@ class AerospikeCommonDataConfiguration {
     @ConditionalOnMissingBean(name = "aerospikeExceptionTranslator")
     public AerospikeExceptionTranslator aerospikeExceptionTranslator() {
         return new DefaultAerospikeExceptionTranslator();
+    }
+
+
+
+    @Bean(name = "aerospikeQueryEngine")
+    @ConditionalOnMissingBean(name = "aerospikeQueryEngine")
+    public QueryEngine aerospikeQueryEngine(AerospikeClient aerospikeClient,
+                                            StatementBuilder statementBuilder) {
+        QueryEngine queryEngine = new QueryEngine(aerospikeClient, statementBuilder, aerospikeClient.getQueryPolicyDefault());
+        queryEngine.setScansEnabled(true);
+        return queryEngine;
+    }
+
+    @Bean(name = "aerospikeIndexRefresher")
+    @ConditionalOnMissingBean(name = "aerospikeIndexRefresher")
+    public IndexRefresher aerospikeIndexRefresher(AerospikeClient aerospikeClient, IndexesCacheUpdater indexesCacheUpdater) {
+        IndexRefresher refresher = new IndexRefresher(aerospikeClient, aerospikeClient.getInfoPolicyDefault(), new InternalIndexOperations(new IndexInfoParser()), indexesCacheUpdater);
+        refresher.refreshIndexes();
+        return refresher;
     }
 }

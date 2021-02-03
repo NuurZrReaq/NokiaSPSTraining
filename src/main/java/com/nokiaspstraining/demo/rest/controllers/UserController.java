@@ -13,7 +13,7 @@ public class UserController {
     @Autowired
     private UserRepositoryRest userRepository;
 
-    @Autowired()
+    @Autowired
     private UserRepAerospike userRepAerospike;
 
 
@@ -21,8 +21,8 @@ public class UserController {
 
     @RequestMapping("/{name}")
     @ResponseBody
-    public User getUser (@PathVariable String name) {
-        User user = userRepository.findUser(name);
+    public io.spring.guides.gs_producing_web_service.User getUser (@PathVariable String name) {
+        io.spring.guides.gs_producing_web_service.User  user = userRepository.findUser(name);
         return user;
 
 

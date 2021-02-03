@@ -34,9 +34,9 @@ dependencies {
 	compile('javax.xml.bind:jaxb-api:2.3.0')
 	compile('javax.activation:activation:1.1')
 	compile('org.glassfish.jaxb:jaxb-runtime:2.3.0')
-	compile ("com.aerospike:aerospike-client:5.0.0")
+	compile ("com.aerospike:aerospike-client:5.0.3")
 
-	compile group: 'com.aerospike', name: 'spring-data-aerospike', version: '2.4.0.RELEASE'
+	compile group: 'com.aerospike', name: 'spring-data-aerospike', version: '2.4.2.RELEASE'
 	compile (group: 'org.springframework', name: 'spring-test', version: '4.3.0.RELEASE')
 	implementation 'org.hibernate.validator:hibernate-validator:6.1.2.Final'
 
